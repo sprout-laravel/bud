@@ -33,7 +33,7 @@ Bud supports the following.
 - [ ] Database Connections
 - [ ] Filesystem Disks
 - [ ] Logging Channels
-- [x] Mailers
+- [ ] Mailers
 - [ ] Queue Connections
 
 > [!NOTE]
