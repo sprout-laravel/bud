@@ -1,0 +1,76 @@
+{
+  "name"             : "sprout/bud",
+  "description"      : "Tenant-specific Laravel service config for your Sprout powered Laravel application",
+  "type"             : "library",
+  "require"          : {
+    "php"              : "^8.2",
+    "laravel/framework": "^11.32",
+    "sprout/sprout"    : "1.x-dev"
+  },
+  "require-dev"      : {
+    "phpunit/phpunit"    : "^11.0.1",
+    "orchestra/testbench": "^9.4",
+    "larastan/larastan"  : "^2.9"
+  },
+  "license"          : "MIT",
+  "autoload"         : {
+    "psr-4": {
+      "Sprout\\Bud\\": "src/"
+    },
+    "files": [
+    ]
+  },
+  "autoload-dev"     : {
+    "psr-4": {
+      "Sprout\\Bud\\Tests\\"            : "tests",
+      "Workbench\\App\\"                : "workbench/app/",
+      "Workbench\\Database\\Factories\\": "workbench/database/factories/",
+      "Workbench\\Database\\Seeders\\"  : "workbench/database/seeders/"
+    }
+  },
+  "authors"          : [
+    {
+      "name" : "Ollie Read",
+      "email": "code@ollieread.com"
+    }
+  ],
+  "minimum-stability": "stable",
+  "scripts"          : {
+    "post-autoload-dump": [
+      "@clear",
+      "@prepare",
+      "@php vendor/bin/testbench package:discover --ansi"
+    ],
+    "clear"             : "@php vendor/bin/testbench package:purge-skeleton --ansi",
+    "prepare"           : "@php vendor/bin/testbench package:discover --ansi",
+    "build"             : "@php vendor/bin/testbench workbench:build --ansi",
+    "serve"             : [
+      "Composer\\Config::disableProcessTimeout",
+      "@build",
+      "@php vendor/bin/testbench serve --ansi"
+    ],
+    "analyse"           : [
+      "@php vendor/bin/phpstan analyse --memory-limit=2G --verbose --ansi"
+    ],
+    "test"              : [
+      "@clear",
+      "@prepare",
+      "@build",
+      "@php vendor/bin/phpunit --testsuite=Unit,Feature"
+    ]
+  },
+  "extra"            : {
+    "laravel"     : {
+      "providers": [
+        "Sprout\\Bud\\BudServiceProvider"
+      ],
+      "facades"  : []
+    },
+    "branch-alias": {
+      "dev-main": "1.x-dev"
+    }
+  },
+  "config"           : {
+    "allow-plugins": {}
+  }
+}
