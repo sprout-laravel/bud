@@ -79,14 +79,20 @@ final class Bud implements TenantAware
             throw TenancyMissingException::make();
         }
 
+        /** @var \Sprout\Contracts\Tenancy<\Sprout\Contracts\Tenant> $tenancy */
+        $tenancy = $this->getTenancy();
+
         if (! $this->hasTenant()) {
-            throw TenantMissingException::make($this->getTenancy()->getName());
+            throw TenantMissingException::make($tenancy->getName());
         }
+
+        /** @var \Sprout\Contracts\Tenant $tenant */
+        $tenant = $this->getTenant();
 
         return $this->store($store)
                     ->get(
-                        $this->getTenancy(), /** @phpstan-ignore argument.type */
-                        $this->getTenant(), /** @phpstan-ignore argument.type */
+                        $tenancy,
+                        $tenant,
                         $service,
                         $name,
                         $default
