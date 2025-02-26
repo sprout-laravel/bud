@@ -4,11 +4,12 @@ declare(strict_types=1);
 namespace Sprout\Bud;
 
 use Illuminate\Contracts\Foundation\Application;
-use RuntimeException;
 use Sprout\Bud\Contracts\ConfigStore;
 use Sprout\Bud\Managers\ConfigStoreManager;
 use Sprout\Concerns\AwareOfTenant;
 use Sprout\Contracts\TenantAware;
+use Sprout\Exceptions\TenancyMissingException;
+use Sprout\Exceptions\TenantMissingException;
 
 final class Bud implements TenantAware
 {
@@ -69,15 +70,17 @@ final class Bud implements TenantAware
      * @return array<string, mixed>|null
      *
      * @throws \Sprout\Exceptions\MisconfigurationException
+     * @throws \Sprout\Exceptions\TenancyMissingException
+     * @throws \Sprout\Exceptions\TenantMissingException
      */
     public function config(string $service, string $name, ?array $default = null, ?string $store = null): ?array
     {
         if (! $this->hasTenancy()) {
-            throw new RuntimeException('There is no tenancy set');
+            throw TenancyMissingException::make();
         }
 
         if (! $this->hasTenant()) {
-            throw new RuntimeException('There is no tenant set');
+            throw TenantMissingException::make($this->getTenancy()->getName());
         }
 
         return $this->store($store)
