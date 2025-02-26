@@ -35,7 +35,7 @@ class ConfigStoreManager extends BaseFactory
      */
     public function getConfigKey(string $name): string
     {
-        return 'sprout.config.stores';
+        return 'sprout.bud.stores.' . $name;
     }
 
     /**

@@ -24,7 +24,7 @@ return [
             'table'      => 'bud_config_store',
         ],
 
-        'storage' => [
+        'filesystem' => [
             'driver'    => 'filesystem',
             'disk'      => env('FILESYSTEM_DISK', 'local'),
             'directory' => 'bud/config',
