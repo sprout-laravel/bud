@@ -37,8 +37,8 @@ Bud supports the following.
 - [ ] Queue Connections
 
 > [!NOTE]
-> If you require configurations that do not require additional values,
-> and can be worked out based on the tenant (adding `WHERE` clauses, etc),
+> If you require configurations that does not require additional values,
+> and can be worked out based on the tenant (adding `WHERE` clauses, etc.),
 > then please consider one of [Sprouts'
-> existing service overrides](https://sprout.ollieread.com/docs/1.x/service-overrides#provided-implementations),
+> existing service overrides](https://sprout.ollieread.com/docs/1.x/service-overrides),
 > or a [custom one](https://sprout.ollieread.com/docs/1.x/custom-service-override).
