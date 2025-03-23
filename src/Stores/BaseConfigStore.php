@@ -41,7 +41,7 @@ abstract class BaseConfigStore implements ConfigStore
      *
      * @return \Illuminate\Contracts\Encryption\Encrypter
      */
-    protected function getEncrypter(): Encrypter
+    public function getEncrypter(): Encrypter
     {
         return $this->encrypter;
     }

@@ -32,6 +32,16 @@ final class DatabaseConfigStore extends BaseConfigStore
     }
 
     /**
+     * Get the table name the store uses
+     *
+     * @return string
+     */
+    public function getTable(): string
+    {
+        return $this->table;
+    }
+
+    /**
      * Get a query builder for the config store
      *
      * @template TenantClass of \Sprout\Contracts\Tenant

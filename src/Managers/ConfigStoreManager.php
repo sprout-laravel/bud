@@ -112,9 +112,7 @@ class ConfigStoreManager extends BaseFactory
 
         return new FilesystemConfigStore(
             $name,
-            isset($config['key'])
-                ? $this->buildEncrypter($config['key'], $config['cipher'] ?? null)
-                : $this->app->make('encrypter'),
+            $this->getEncrypter($config['key'] ?? null, $config['cipher'] ?? null),
             $disk
         );
     }
@@ -140,9 +138,7 @@ class ConfigStoreManager extends BaseFactory
 
         return new DatabaseConfigStore(
             $name,
-            isset($config['key'])
-                ? $this->buildEncrypter($config['key'], $config['cipher'] ?? null)
-                : $this->app->make('encrypter'),
+            $this->getEncrypter($config['key'] ?? null, $config['cipher'] ?? null),
             $this->app->make('db')->connection($config['connection'] ?? null),
             $config['table']
         );

@@ -3,141 +3,256 @@ declare(strict_types=1);
 
 namespace Sprout\Bud\Tests\Unit\Managers;
 
-use Orchestra\Testbench\Attributes\DefineEnvironment;
+use Closure;
+use Illuminate\Config\Repository;
+use Illuminate\Contracts\Encryption\Encrypter;
+use Illuminate\Contracts\Filesystem\Filesystem;
+use Illuminate\Database\Connection;
+use Illuminate\Database\DatabaseManager;
+use Illuminate\Filesystem\FilesystemManager;
+use Illuminate\Foundation\Application;
+use Illuminate\Support\Str;
+use Mockery;
+use Mockery\MockInterface;
 use PHPUnit\Framework\Attributes\Test;
-use Sprout\Bud\Bud;
+use Sprout\Bud\Managers\ConfigStoreManager;
 use Sprout\Bud\Stores\DatabaseConfigStore;
 use Sprout\Bud\Stores\FilesystemConfigStore;
 use Sprout\Bud\Tests\Unit\UnitTestCase;
 use Sprout\Exceptions\MisconfigurationException;
-use Sprout\Http\Resolvers\CookieIdentityResolver;
-use Sprout\Http\Resolvers\HeaderIdentityResolver;
-use Sprout\Http\Resolvers\PathIdentityResolver;
-use Sprout\Http\Resolvers\SessionIdentityResolver;
-use Sprout\Http\Resolvers\SubdomainIdentityResolver;
-use Sprout\Managers\IdentityResolverManager;
-use function Sprout\sprout;
 
 class ConfigStoreManagerTest extends UnitTestCase
 {
-    protected function withoutDefault($app): void
+    /**
+     * Mocks an application instance and allows optional customisation via a callback function.
+     *
+     * @param Closure|null $callback An optional callback to customise the mocks behaviour.
+     *
+     * @return \Illuminate\Foundation\Application&\Mockery\MockInterface The mocked application instance.
+     */
+    protected function mockApplication(?Closure $callback = null): Application&MockInterface
     {
-        tap($app['config'], static function ($config) {
-            $config->set('multitenancy.defaults.config', null);
+        /** @var \Illuminate\Foundation\Application&\Mockery\MockInterface $application */
+        $application = Mockery::mock(Application::class, static function (MockInterface $mock) use ($callback) {
+            if ($callback !== null) {
+                $callback($mock);
+            }
         });
+
+        return $application;
     }
 
-    protected function withoutConfig($app): void
+    /**
+     * Mocks a configuration repository instance and allows optional customisation via a callback function.
+     *
+     * @param Closure|null $callback An optional callback to customise the mocks behaviour.
+     *
+     * @return \Illuminate\Config\Repository&\Mockery\MockInterface The mocked configuration repository instance.
+     */
+    protected function mockConfig(?Closure $callback = null): Repository&MockInterface
     {
-        tap($app['config'], static function ($config) {
-            $config->set('sprout.bud.stores.database', null);
+        /** @var \Illuminate\Config\Repository&\Mockery\MockInterface $config */
+        $config = Mockery::mock(Repository::class, static function (MockInterface $mock) use ($callback) {
+            if ($callback !== null) {
+                $callback($mock);
+            }
         });
+
+        return $config;
+    }
+
+    protected function mockFilesystem(?Closure $callback = null): FilesystemManager&MockInterface
+    {
+        /** @var \Illuminate\Filesystem\FilesystemManager&\Mockery\MockInterface $filesystem */
+        $filesystem = Mockery::mock(FilesystemManager::class, static function (MockInterface $mock) use ($callback) {
+            if ($callback !== null) {
+                $callback($mock);
+            }
+        });
+
+        return $filesystem;
+    }
+
+    protected function getConfigStoreManager(Application $app): ConfigStoreManager
+    {
+        return new ConfigStoreManager($app);
     }
 
     #[Test]
-    public function isNamedCorrectly(): void
+    public function hasTheCorrectName(): void
     {
-        $manager = app(Bud::class)->stores();
+        $manager = $this->getConfigStoreManager($this->mockApplication());
 
         $this->assertSame('config', $manager->getFactoryName());
     }
 
     #[Test]
-    public function getsTheDefaultNameFromTheConfig(): void
+    public function returnsTheCorrectConfigKey(): void
     {
-        $manager = app(Bud::class)->stores();
+        $manager = $this->getConfigStoreManager($this->mockApplication());
 
-        config()->set('multitenancy.defaults.config', 'database');
-
-        $this->assertSame('database', $manager->getDefaultName());
-
-        config()->set('multitenancy.defaults.config', 'filesystem');
-
-        $this->assertSame('filesystem', $manager->getDefaultName());
+        $this->assertSame('sprout.bud.stores.test1', $manager->getConfigKey('test1'));
+        $this->assertSame('sprout.bud.stores.test2', $manager->getConfigKey('test2'));
+        $this->assertSame('sprout.bud.stores.test3', $manager->getConfigKey('test3'));
+        $this->assertSame('sprout.bud.stores.test4', $manager->getConfigKey('test4'));
     }
 
     #[Test]
-    public function generatesConfigKeys(): void
+    public function hasDefaultDrivers(): void
     {
-        $manager = app(Bud::class)->stores();
+        $manager = $this->getConfigStoreManager($this->mockApplication());
 
-        $this->assertSame('sprout.bud.stores.test-config', $manager->getConfigKey('test-config'));
-    }
-
-    #[Test]
-    public function hasDefaultFirstPartyDrivers(): void
-    {
-        $manager = app(Bud::class)->stores();
-
-        $this->assertFalse($manager->hasResolved());
-
-        $this->assertTrue($manager->hasDriver('database'));
         $this->assertTrue($manager->hasDriver('filesystem'));
-        $this->assertFalse($manager->hasDriver('fake-driver'));
-
-        $this->assertFalse($manager->hasResolved());
-
-        $this->assertInstanceOf(DatabaseConfigStore::class, $manager->get('database'));
-        $this->assertInstanceOf(FilesystemConfigStore::class, $manager->get('filesystem'));
-
-        $this->assertTrue($manager->hasResolved('database'));
-        $this->assertTrue($manager->hasResolved('filesystem'));
-    }
-
-    #[Test]
-    public function canFlushResolvedInstances(): void
-    {
-        $manager = app(Bud::class)->stores();
-
-        $this->assertFalse($manager->hasResolved());
-
         $this->assertTrue($manager->hasDriver('database'));
-        $this->assertTrue($manager->hasDriver('filesystem'));
-
-        $this->assertFalse($manager->hasResolved());
-
-        $this->assertInstanceOf(DatabaseConfigStore::class, $manager->get('database'));
-        $this->assertInstanceOf(FilesystemConfigStore::class, $manager->get('filesystem'));
-
-        $this->assertTrue($manager->hasResolved('database'));
-        $this->assertTrue($manager->hasResolved('filesystem'));
-
-        $manager->flushResolved();
-
-        $this->assertFalse($manager->hasResolved('database'));
-        $this->assertFalse($manager->hasResolved('filesystem'));
     }
 
     #[Test]
-    public function errorsIfTheresNoConfigCanBeFoundForADriver(): void
+    public function canBuildTheFilesystemDriver(): void
     {
-        $manager = app(Bud::class)->stores();
+        $manager = $this->getConfigStoreManager($this->mockApplication(function (MockInterface $mock) {
+            $mock->shouldReceive('make')
+                 ->with('config')
+                 ->once()
+                 ->andReturn($this->mockConfig(function (MockInterface $mock) {
+                     $mock->shouldReceive('get')
+                          ->with('sprout.bud.stores.filesystem')
+                          ->once()
+                          ->andReturn([
+                              'driver' => 'filesystem',
+                              'disk'   => 'my-favourite',
+                          ]);
+                 }));
 
-        $this->expectException(MisconfigurationException::class);
-        $this->expectExceptionMessage('The config for [config::missing] could not be found');
+            $mock->shouldReceive('make')
+                 ->with('filesystem')
+                 ->once()
+                 ->andReturn($this->mockFilesystem(function (MockInterface $mock) {
+                     $mock->shouldReceive('disk')
+                          ->with('my-favourite')
+                          ->once()
+                          ->andReturn(Mockery::mock(Filesystem::class));
+                 }));
 
-        $manager->get('missing');
+            $mock->shouldReceive('make')
+                 ->with('encrypter')
+                 ->once()
+                 ->andReturn(Mockery::mock(Encrypter::class));
+        }));
+
+        $store = $manager->get('filesystem');
+
+        $this->assertSame('filesystem', $store->getName());
+        $this->assertInstanceOf(FilesystemConfigStore::class, $store);
     }
 
     #[Test]
-    public function errorsIfTheresNoCreatorForADriver(): void
+    public function canBuildTheFilesystemDriverWithAScopedDisk(): void
     {
-        $manager = app(Bud::class)->stores();
+        $manager = $this->getConfigStoreManager($this->mockApplication(function (MockInterface $mock) {
+            $mock->shouldReceive('make')
+                 ->with('config')
+                 ->once()
+                 ->andReturn($this->mockConfig(function (MockInterface $mock) {
+                     $mock->shouldReceive('get')
+                          ->with('sprout.bud.stores.filesystem')
+                          ->once()
+                          ->andReturn([
+                              'driver'    => 'filesystem',
+                              'disk'      => 'my-favourite',
+                              'directory' => 'my-directory',
+                          ]);
+                 }));
 
-        config()->set('sprout.bud.stores.missing', []);
+            $mock->shouldReceive('make')
+                 ->with('filesystem')
+                 ->once()
+                 ->andReturn($this->mockFilesystem(function (MockInterface $mock) {
+                     $mock->shouldReceive('createScopedDriver')
+                          ->with([
+                              'disk'   => 'my-favourite',
+                              'prefix' => 'my-directory',
+                          ])
+                          ->once()
+                          ->andReturn(Mockery::mock(Filesystem::class));
+                 }));
 
-        $this->expectException(MisconfigurationException::class);
-        $this->expectExceptionMessage('The creator for [config::missing] could not be found');
+            $mock->shouldReceive('make')
+                 ->with('encrypter')
+                 ->once()
+                 ->andReturn(Mockery::mock(Encrypter::class));
+        }));
 
-        $manager->get('missing');
+        $store = $manager->get('filesystem');
+
+        $this->assertSame('filesystem', $store->getName());
+        $this->assertInstanceOf(FilesystemConfigStore::class, $store);
     }
 
     #[Test]
-    public function errorsIfNoFilesystemDiskWasProvided(): void
+    public function canBuildTheFilesystemDriverWithCustomEncrypter(): void
     {
-        config()->set('sprout.bud.stores.filesystem.disk', null);
+        $key     = Str::random(32);
+        $manager = $this->getConfigStoreManager($this->mockApplication(function (MockInterface $mock) use ($key) {
+            $mock->shouldReceive('make')
+                 ->with('config')
+                 ->twice()
+                 ->andReturn($this->mockConfig(function (MockInterface $mock) use ($key) {
+                     $mock->shouldReceive('get')
+                          ->with('sprout.bud.stores.filesystem')
+                          ->once()
+                          ->andReturn([
+                              'driver' => 'filesystem',
+                              'disk'   => 'my-favourite',
+                              'key'    => 'base64:' . base64_encode($key),
+                          ]);
 
-        $manager = app(Bud::class)->stores();
+                     $mock->shouldReceive('get')
+                          ->with('app.cipher', 'AES-256-CBC')
+                          ->once()
+                          ->andReturn('AES-256-CBC');
+                 }));
+
+            $mock->shouldReceive('make')
+                 ->with('filesystem')
+                 ->once()
+                 ->andReturn($this->mockFilesystem(function (MockInterface $mock) {
+                     $mock->shouldReceive('disk')
+                          ->with('my-favourite')
+                          ->once()
+                          ->andReturn(Mockery::mock(Filesystem::class));
+                 }));
+
+            $mock->shouldReceive('make')
+                 ->with('encrypter')
+                 ->never();
+        }));
+
+        $store = $manager->get('filesystem');
+
+        $this->assertSame('filesystem', $store->getName());
+        $this->assertInstanceOf(FilesystemConfigStore::class, $store);
+
+        $encrypter = $store->getEncrypter();
+
+        $this->assertSame($key, $encrypter->getKey());
+    }
+
+    #[Test]
+    public function throwsAnExceptionWhenThereIsNoDiskForTheFilesystemDriver(): void
+    {
+        $manager = $this->getConfigStoreManager($this->mockApplication(function (MockInterface $mock) {
+            $mock->shouldReceive('make')
+                 ->with('config')
+                 ->once()
+                 ->andReturn($this->mockConfig(function (MockInterface $mock) {
+                     $mock->shouldReceive('get')
+                          ->with('sprout.bud.stores.filesystem')
+                          ->once()
+                          ->andReturn([
+                              'driver' => 'filesystem',
+                          ]);
+                 }));
+        }));
 
         $this->expectException(MisconfigurationException::class);
         $this->expectExceptionMessage('The config store [filesystem] is missing a required value for \'disk\'');
@@ -146,52 +261,154 @@ class ConfigStoreManagerTest extends UnitTestCase
     }
 
     #[Test]
-    public function errorsIfNoDatabaseTableWasProvided(): void
+    public function canBuildTheDatabaseDriver(): void
     {
-        config()->set('sprout.bud.stores.database.table', null);
+        $manager = $this->getConfigStoreManager($this->mockApplication(function (MockInterface $mock) {
+            $mock->shouldReceive('make')
+                 ->with('config')
+                 ->once()
+                 ->andReturn($this->mockConfig(function (MockInterface $mock) {
+                     $mock->shouldReceive('get')
+                          ->with('sprout.bud.stores.database')
+                          ->once()
+                          ->andReturn([
+                              'driver' => 'database',
+                              'table'  => 'tenant_config',
+                          ]);
+                 }));
 
-        $manager = app(Bud::class)->stores();
+            $mock->shouldReceive('make')
+                 ->with('db')
+                 ->once()
+                 ->andReturn(Mockery::mock(DatabaseManager::class, static function (MockInterface $mock) {
+                     $mock->shouldReceive('connection')
+                          ->once()
+                          ->andReturn(Mockery::mock(Connection::class));
+                 }));
+
+            $mock->shouldReceive('make')
+                 ->with('encrypter')
+                 ->once()
+                 ->andReturn(Mockery::mock(Encrypter::class));
+        }));
+
+        $store = $manager->get('database');
+
+        $this->assertSame('database', $store->getName());
+        $this->assertInstanceOf(DatabaseConfigStore::class, $store);
+        $this->assertSame('tenant_config', $store->getTable());
+    }
+
+    #[Test]
+    public function canBuildTheDatabaseDriverWithSpecificConnectionName(): void
+    {
+        $manager = $this->getConfigStoreManager($this->mockApplication(function (MockInterface $mock) {
+            $mock->shouldReceive('make')
+                 ->with('config')
+                 ->once()
+                 ->andReturn($this->mockConfig(function (MockInterface $mock) {
+                     $mock->shouldReceive('get')
+                          ->with('sprout.bud.stores.database')
+                          ->once()
+                          ->andReturn([
+                              'driver'     => 'database',
+                              'table'      => 'tenant_config',
+                              'connection' => 'my-connection',
+                          ]);
+                 }));
+
+            $mock->shouldReceive('make')
+                 ->with('db')
+                 ->once()
+                 ->andReturn(Mockery::mock(DatabaseManager::class, static function (MockInterface $mock) {
+                     $mock->shouldReceive('connection')
+                          ->with('my-connection')
+                          ->once()
+                          ->andReturn(Mockery::mock(Connection::class));
+                 }));
+
+            $mock->shouldReceive('make')
+                 ->with('encrypter')
+                 ->once()
+                 ->andReturn(Mockery::mock(Encrypter::class));
+        }));
+
+        $store = $manager->get('database');
+
+        $this->assertSame('database', $store->getName());
+        $this->assertInstanceOf(DatabaseConfigStore::class, $store);
+        $this->assertSame('tenant_config', $store->getTable());
+    }
+
+    #[Test]
+    public function canBuildTheDatabaseDriverWithCustomEncrypter(): void
+    {
+        $key     = Str::random(32);
+        $manager = $this->getConfigStoreManager($this->mockApplication(function (MockInterface $mock) use ($key) {
+            $mock->shouldReceive('make')
+                 ->with('config')
+                 ->twice()
+                 ->andReturn($this->mockConfig(function (MockInterface $mock) use ($key) {
+                     $mock->shouldReceive('get')
+                          ->with('sprout.bud.stores.database')
+                          ->once()
+                          ->andReturn([
+                              'driver' => 'database',
+                              'table'  => 'tenant_config',
+                              'key'    => 'base64:' . base64_encode($key),
+                          ]);
+
+                     $mock->shouldReceive('get')
+                          ->with('app.cipher', 'AES-256-CBC')
+                          ->once()
+                          ->andReturn('AES-256-CBC');
+                 }));
+
+            $mock->shouldReceive('make')
+                 ->with('db')
+                 ->once()
+                 ->andReturn(Mockery::mock(DatabaseManager::class, static function (MockInterface $mock) {
+                     $mock->shouldReceive('connection')
+                          ->once()
+                          ->andReturn(Mockery::mock(Connection::class));
+                 }));
+
+            $mock->shouldReceive('make')
+                 ->with('encrypter')
+                 ->never();
+        }));
+
+        $store = $manager->get('database');
+
+        $this->assertSame('database', $store->getName());
+        $this->assertInstanceOf(DatabaseConfigStore::class, $store);
+        $this->assertSame('tenant_config', $store->getTable());
+
+        $encrypter = $store->getEncrypter();
+
+        $this->assertSame($key, $encrypter->getKey());
+    }
+
+    #[Test]
+    public function throwsAnExceptionWhenThereIsNoTableForTheDatabaseDriver(): void
+    {
+        $manager = $this->getConfigStoreManager($this->mockApplication(function (MockInterface $mock) {
+            $mock->shouldReceive('make')
+                 ->with('config')
+                 ->once()
+                 ->andReturn($this->mockConfig(function (MockInterface $mock) {
+                     $mock->shouldReceive('get')
+                          ->with('sprout.bud.stores.database')
+                          ->once()
+                          ->andReturn([
+                              'driver' => 'database',
+                          ]);
+                 }));
+        }));
 
         $this->expectException(MisconfigurationException::class);
         $this->expectExceptionMessage('The config store [database] is missing a required value for \'table\'');
 
         $manager->get('database');
-    }
-
-    #[Test, DefineEnvironment('withoutDefault')]
-    public function errorsIfTheresNoDefault(): void
-    {
-        $this->expectException(MisconfigurationException::class);
-        $this->expectExceptionMessage('There is no default config set');
-
-        $manager = app(Bud::class)->stores();
-
-        $manager->get();
-    }
-
-    #[Test]
-    public function allowsCustomCreators(): void
-    {
-        $this->markTestSkipped('Needs rejigging');
-
-        config()->set('sprout.bud.stores.database.driver', 'hello-there');
-
-        IdentityResolverManager::register('hello-there', static function () {
-            return new SubdomainIdentityResolver('hello-there', 'somedomain.local');
-        });
-
-        $manager = sprout()->resolvers();
-
-        $this->assertTrue($manager->hasDriver('hello-there'));
-        $this->assertFalse($manager->hasResolved('path'));
-        $this->assertFalse($manager->hasResolved('subdomain'));
-
-        $resolver = $manager->get('path');
-
-        $this->assertInstanceOf(SubdomainIdentityResolver::class, $resolver);
-        $this->assertSame('hello-there', $resolver->getName());
-        $this->assertSame('somedomain.local', $resolver->getDomain());
-        $this->assertTrue($manager->hasResolved('path'));
-        $this->assertFalse($manager->hasResolved('subdomain'));
     }
 }
