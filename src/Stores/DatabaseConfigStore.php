@@ -186,6 +186,6 @@ final class DatabaseConfigStore extends BaseConfigStore
                                     'service'   => $service,
                                     'name'      => $name,
                                     'config'    => $this->encryptConfig($config),
-                                ]);
+                                ]) !== 0;
     }
 }
