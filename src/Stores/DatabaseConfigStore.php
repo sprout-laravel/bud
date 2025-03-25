@@ -32,6 +32,16 @@ final class DatabaseConfigStore extends BaseConfigStore
     }
 
     /**
+     * Get the table name the store uses
+     *
+     * @return string
+     */
+    public function getTable(): string
+    {
+        return $this->table;
+    }
+
+    /**
      * Get a query builder for the config store
      *
      * @template TenantClass of \Sprout\Contracts\Tenant
@@ -169,6 +179,10 @@ final class DatabaseConfigStore extends BaseConfigStore
             return false;
         }
 
+        /**
+         * This is here because Laravel doesn't honour its own return type
+         * @phpstan-ignore notIdentical.alwaysTrue
+         */
         return $this->connection->table($this->table)
                                 ->insert([
                                     'tenancy'   => $tenancy->getName(),
@@ -176,6 +190,6 @@ final class DatabaseConfigStore extends BaseConfigStore
                                     'service'   => $service,
                                     'name'      => $name,
                                     'config'    => $this->encryptConfig($config),
-                                ]);
+                                ]) !== 0;
     }
 }

@@ -35,7 +35,7 @@ class ConfigStoreManager extends BaseFactory
      */
     public function getConfigKey(string $name): string
     {
-        return 'sprout.config.stores';
+        return 'sprout.bud.stores.' . $name;
     }
 
     /**
@@ -53,7 +53,10 @@ class ConfigStoreManager extends BaseFactory
      */
     protected function getEncrypter(?string $key, ?string $cipher): EncrypterContract
     {
-        return $key ? $this->buildEncrypter($key, $cipher) : $this->app->make('encrypter');
+        /** @var \Illuminate\Contracts\Encryption\Encrypter $encrypter */
+        $encrypter = $key ? $this->buildEncrypter($key, $cipher) : $this->app->make('encrypter');
+
+        return $encrypter;
     }
 
     /**
@@ -112,9 +115,7 @@ class ConfigStoreManager extends BaseFactory
 
         return new FilesystemConfigStore(
             $name,
-            isset($config['key'])
-                ? $this->buildEncrypter($config['key'], $config['cipher'] ?? null)
-                : $this->app->make('encrypter'),
+            $this->getEncrypter($config['key'] ?? null, $config['cipher'] ?? null),
             $disk
         );
     }
@@ -140,9 +141,7 @@ class ConfigStoreManager extends BaseFactory
 
         return new DatabaseConfigStore(
             $name,
-            isset($config['key'])
-                ? $this->buildEncrypter($config['key'], $config['cipher'] ?? null)
-                : $this->app->make('encrypter'),
+            $this->getEncrypter($config['key'] ?? null, $config['cipher'] ?? null),
             $this->app->make('db')->connection($config['connection'] ?? null),
             $config['table']
         );

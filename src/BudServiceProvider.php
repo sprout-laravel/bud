@@ -32,13 +32,13 @@ class BudServiceProvider extends ServiceProvider
     private function registerDefaultBindings(): void
     {
         // Bind the config store to the default implementation
-        $this->app->bind(ConfigStore::class, fn() => $this->bud->store());
+        $this->app->bind(ConfigStore::class, fn () => $this->bud->store());
     }
 
     private function registerManagers(): void
     {
         // Register the config store manager
-        $this->app->singleton(ConfigStoreManager::class, fn() => $this->bud->stores());
+        $this->app->singleton(ConfigStoreManager::class, fn () => $this->bud->stores());
 
         // Alias the managers with simple names
         $this->app->alias(ConfigStoreManager::class, 'sprout.bud.stores');
@@ -47,6 +47,7 @@ class BudServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $this->publishConfig();
+        $this->publishMigrations();
     }
 
     private function publishConfig(): void
@@ -54,5 +55,12 @@ class BudServiceProvider extends ServiceProvider
         $this->publishes([
             __DIR__ . '/../resources/config/bud.php' => config_path('sprout/bud.php'),
         ], ['config', 'sprout-config', 'bud-config']);
+    }
+
+    private function publishMigrations(): void
+    {
+        $this->publishes([
+            __DIR__ . '/../resources/migrations/0001_01_01_70000_create_bud_config_store_table.php' => database_path('migrations/0001_01_01_70000_create_bud_config_store_table.php'),
+        ], ['migrations', 'sprout-migrations', 'bud-migrations']);
     }
 }

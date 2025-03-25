@@ -1,4 +1,5 @@
 providers:
+  - Sprout\SproutServiceProvider
   - Sprout\Bud\BudServiceProvider
 
 migrations:
@@ -22,5 +23,6 @@ workbench:
     - create-sqlite-db
     - migrate:refresh
   assets:
+    - sprout-config
     - bud-config
   sync: []
