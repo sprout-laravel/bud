@@ -53,7 +53,10 @@ class ConfigStoreManager extends BaseFactory
      */
     protected function getEncrypter(?string $key, ?string $cipher): EncrypterContract
     {
-        return $key ? $this->buildEncrypter($key, $cipher) : $this->app->make('encrypter');
+        /** @var \Illuminate\Contracts\Encryption\Encrypter $encrypter */
+        $encrypter = $key ? $this->buildEncrypter($key, $cipher) : $this->app->make('encrypter');
+
+        return $encrypter;
     }
 
     /**

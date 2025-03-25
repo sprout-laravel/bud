@@ -179,6 +179,10 @@ final class DatabaseConfigStore extends BaseConfigStore
             return false;
         }
 
+        /**
+         * This is here because Laravel doesn't honour its own return type
+         * @phpstan-ignore notIdentical.alwaysTrue
+         */
         return $this->connection->table($this->table)
                                 ->insert([
                                     'tenancy'   => $tenancy->getName(),

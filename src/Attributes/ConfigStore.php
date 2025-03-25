@@ -35,12 +35,12 @@ final readonly class ConfigStore implements ContextualAttribute
      * @param \Sprout\Bud\Attributes\ConfigStore        $attribute
      * @param \Illuminate\Contracts\Container\Container $container
      *
-     * @return \Sprout\Bud\Contracts\ConfigStore|null
+     * @return \Sprout\Bud\Contracts\ConfigStore
      *
      * @throws \Illuminate\Contracts\Container\BindingResolutionException
      * @throws \Sprout\Exceptions\MisconfigurationException
      */
-    public function resolve(self $attribute, Container $container): ?ConfigStoreContract
+    public function resolve(self $attribute, Container $container): ConfigStoreContract
     {
         return $container->make(ConfigStoreManager::class)->get($attribute->name);
     }
