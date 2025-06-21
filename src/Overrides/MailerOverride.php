@@ -4,15 +4,10 @@ declare(strict_types=1);
 namespace Sprout\Bud\Overrides;
 
 use Closure;
-use Illuminate\Contracts\Foundation\Application;
-use Illuminate\Mail\MailManager;
 use RuntimeException;
 use Sprout\Bud\Bud;
 use Sprout\Bud\Overrides\Mailer\BudMailerTransportCreator;
 use Sprout\Contracts\BootableServiceOverride;
-use Sprout\Contracts\Tenancy;
-use Sprout\Contracts\Tenant;
-use Sprout\Overrides\BaseOverride;
 use Sprout\Sprout;
 
 /**
@@ -20,54 +15,37 @@ use Sprout\Sprout;
  *
  * This override specifically allows for the creation of mailers
  * using Bud config stores.
+ *
+ * @extends \Sprout\Bud\Overrides\BaseOverride<\Illuminate\Mail\MailManager>
  */
 final class MailerOverride extends BaseOverride implements BootableServiceOverride
 {
     /**
-     * @var list<string>
-     */
-    protected array $mailers = [];
-
-    /**
-     * Get the resolved Bud mailers.
+     * Get the name of the service being overridden.
      *
-     * @return list<string>
+     * @return string
      */
-    public function getMailers(): array
+    protected function serviceName(): string
     {
-        return $this->mailers;
+        return 'mail.manager';
     }
 
     /**
-     * Boot a service override
+     * Add a driver to the service.
      *
-     * This method should perform any initial steps required for the service
-     * override that take place during the booting of the framework.
+     * @param object                               $service
+     * @param \Sprout\Bud\Bud                      $bud
+     * @param \Sprout\Sprout                       $sprout
+     * @param \Closure                             $tracker
      *
-     * @param \Illuminate\Contracts\Foundation\Application $app
-     * @param \Sprout\Sprout                               $sprout
+     * @phpstan-param \Illuminate\Mail\MailManager $service
      *
      * @return void
-     *
-     * @throws \Illuminate\Contracts\Container\BindingResolutionException
      */
-    public function boot(Application $app, Sprout $sprout): void
-    {
-        $tracker = fn (string $mailer) => $this->mailers[] = $mailer;
-
-        if ($app->resolved('mail.manager')) {
-            $this->addDriver($app->make('mail.manager'), $app->make(Bud::class), $sprout, $tracker);
-        } else {
-            $app->afterResolving('mail.manager', function (MailManager $mail, Application $app) use ($sprout, $tracker) {
-                $this->addDriver($mail, $app->make(Bud::class), $sprout, $tracker);
-            });
-        }
-    }
-
-    private function addDriver(MailManager $mail, Bud $bud, Sprout $sprout, Closure $tracker): void
+    protected function addDriver(object $service, Bud $bud, Sprout $sprout, Closure $tracker): void
     {
         // Add a bud driver.
-        $mail->extend('bud', function ($config) use ($mail, $bud, $sprout, $tracker) {
+        $service->extend('bud', function ($config) use ($service, $bud, $sprout, $tracker) {
             /**
              * @var array<string, mixed>&array{budStore?:string|null,name?:mixed} $config
              */
@@ -79,49 +57,22 @@ final class MailerOverride extends BaseOverride implements BootableServiceOverri
             // Track the mailer name.
             $tracker($config['name']);
 
-            return (new BudMailerTransportCreator($mail, $bud, $sprout, $config['name'], $config))();
+            return (new BudMailerTransportCreator($service, $bud, $sprout, $config['name'], $config))();
         });
     }
 
     /**
-     * Clean up the service override
+     * Clean-up an overridden service.
      *
-     * This method should perform any necessary setup actions for the service
-     * override.
-     * It is called when the current tenant is unset, either to be replaced
-     * by another tenant, or none.
+     * @param object                               $service
+     * @param string                               $name
      *
-     * It will be called before {@see self::setup()}, but only if the previous
-     * tenant was not null.
-     *
-     * @template TenantClass of \Sprout\Contracts\Tenant
-     *
-     * @param \Sprout\Contracts\Tenancy<TenantClass> $tenancy
-     * @param \Sprout\Contracts\Tenant               $tenant
-     *
-     * @phpstan-param Tenant                         $tenant
+     * @phpstan-param \Illuminate\Mail\MailManager $service
      *
      * @return void
-     *
-     * @throws \Illuminate\Contracts\Container\BindingResolutionException
      */
-    public function cleanup(Tenancy $tenancy, Tenant $tenant): void
+    protected function cleanupOverride(object $service, string $name): void
     {
-        // If the mail manager was resolved, and we resolved bud-specific
-        // mailers, we'll tidy up by purging them.
-        if ($this->getApp()->resolved('mail.manager')) {
-            $mailers = $this->getMailers();
-
-            if (! empty($mailers)) {
-                /** @var \Illuminate\Mail\MailManager $manager */
-                $manager = $this->getApp()->make('mail.manager');
-
-                foreach ($mailers as $mailer) {
-                    $manager->purge($mailer);
-                }
-            }
-        }
+        $service->purge($name);
     }
-
-
 }
