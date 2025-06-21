@@ -5,6 +5,7 @@ namespace Sprout\Bud\Overrides;
 
 use RuntimeException;
 use Sprout\Bud\Bud;
+use Sprout\Bud\Exceptions\CyclicOverrideException;
 use Sprout\Exceptions\TenancyMissingException;
 use Sprout\Exceptions\TenantMissingException;
 use Sprout\Sprout;
@@ -72,5 +73,22 @@ abstract class BaseCreator
         }
 
         return array_merge($config, $budConfig);
+    }
+
+    /**
+     * Check if the driver is cyclic.
+     *
+     * @param string|null $driver
+     * @param string      $term
+     * @param string      $name
+     *
+     * @return void
+     *
+     */
+    protected function checkForCyclicDrivers(?string $driver, string $term, string $name): void
+    {
+        if ($driver === 'bud') {
+            throw CyclicOverrideException::make($term, $name);
+        }
     }
 }

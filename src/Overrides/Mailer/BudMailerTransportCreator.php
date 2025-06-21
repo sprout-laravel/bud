@@ -61,15 +61,15 @@ final class BudMailerTransportCreator extends BaseCreator
      */
     public function __invoke(): TransportInterface
     {
+        /** @var array<string, mixed>&array{transport?:string|null} $config */
         $config = $this->getConfig($this->sprout, $this->bud, $this->config, $this->name);
 
-        // We need to make sure that this is going to recurse infinitely.
-        if (isset($config['transport']) && $config['transport'] === 'bud') {
-            throw new RuntimeException(sprintf(
-                'Attempt to create cyclic bud mailer [%s] detected',
-                $this->name
-            ));
-        }
+        // We need to make sure that this isn't going to recurse infinitely.
+        $this->checkForCyclicDrivers(
+            $config['transport'] ?? null,
+            'mailer',
+            $this->name
+        );
 
         return $this->manager->createSymfonyTransport($config);
     }

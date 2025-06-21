@@ -5,11 +5,8 @@ namespace Sprout\Bud\Overrides\Database;
 
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\DatabaseManager;
-use RuntimeException;
 use Sprout\Bud\Bud;
 use Sprout\Bud\Overrides\BaseCreator;
-use Sprout\Exceptions\TenancyMissingException;
-use Sprout\Exceptions\TenantMissingException;
 use Sprout\Sprout;
 
 /**
@@ -66,15 +63,15 @@ final class BudDatabaseConnectionCreator extends BaseCreator
      */
     public function __invoke(): ConnectionInterface
     {
+        /** @var array<string, mixed>&array{driver?:string|null} $config */
         $config = $this->getConfig($this->sprout, $this->bud, $this->config, $this->name);
 
-        // We need to make sure that this is going to recurse infinitely.
-        if (isset($config['driver']) && $config['driver'] === 'bud') {
-            throw new RuntimeException(sprintf(
-                'Attempt to create cyclic bud database connection [%s] detected',
-                $this->name
-            ));
-        }
+        // We need to make sure that this isn't going to recurse infinitely.
+        $this->checkForCyclicDrivers(
+            $config['driver'] ?? null,
+            'database connection',
+            $this->name
+        );
 
         // If we're here, it's not cyclic, so we'll create a dynamic connection.
         // We're intentionally not using the methods for creating a dynamic
