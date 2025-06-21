@@ -50,7 +50,7 @@ abstract class BaseCreator
 
         // Get the default store, or the one specified in the config, if there
         // is one.
-        $store = $bud->store($this->config['budStore'] ?? null);
+        $store = $bud->store($config['budStore'] ?? null);
 
         // Get the config for the connection from the store.
         $budConfig = $store->get(

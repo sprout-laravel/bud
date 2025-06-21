@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace Sprout\Bud\Overrides;
 
+use Closure;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Database\DatabaseManager;
 use Sprout\Bud\Bud;
@@ -62,12 +63,17 @@ final class DatabaseConnectionOverride extends BaseOverride implements BootableS
         }
     }
 
-    private function addDriver(DatabaseManager $db, Bud $bud, Sprout $sprout, \Closure $tracker): void
+    private function addDriver(DatabaseManager $db, Bud $bud, Sprout $sprout, Closure $tracker): void
     {
         // Add a bud driver.
         $db->extend('bud', function ($config, $name) use ($db, $bud, $sprout, $tracker) {
             // Track the connection name.
             $tracker($name);
+
+            /**
+             * @var string                                            $name
+             * @var array<string, mixed>&array{budStore?:string|null} $config
+             */
 
             return (new BudDatabaseConnectionCreator($db, $bud, $sprout, $name, $config))();
         });

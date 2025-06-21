@@ -68,7 +68,11 @@ final class MailerOverride extends BaseOverride implements BootableServiceOverri
     {
         // Add a bud driver.
         $mail->extend('bud', function ($config) use ($mail, $bud, $sprout, $tracker) {
-            if (! isset($config['name'])) {
+            /**
+             * @var array<string, mixed>&array{budStore?:string|null,name?:mixed} $config
+             */
+
+            if (! isset($config['name']) || ! is_string($config['name']) || $config['name'] === '') {
                 throw new RuntimeException('Cannot create a mailer using bud without a name');
             }
 
