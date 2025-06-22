@@ -91,7 +91,7 @@ class BudBroadcastManager extends BroadcastManager
     /**
      * Resolve the given broadcaster.
      *
-     * @param array<string, mixed>&array{driver:string} $config
+     * @param array<string, mixed>&array{driver:string,name:string} $config
      *
      * @return \Illuminate\Contracts\Broadcasting\Broadcaster
      *
