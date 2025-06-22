@@ -82,4 +82,14 @@ final class BudDatabaseConnectionCreator extends BaseCreator
             true // This is important, it needs to be here to avoid side-effect errors.
         );
     }
+
+    /**
+     * Get the name of the service for the creator.
+     *
+     * @return string
+     */
+    protected function getService(): string
+    {
+        return 'database';
+    }
 }

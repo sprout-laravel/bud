@@ -13,6 +13,13 @@ use Sprout\Sprout;
 abstract class BaseCreator
 {
     /**
+     * Get the name of the service for the creator.
+     *
+     * @return string
+     */
+    abstract protected function getService(): string;
+
+    /**
      * @param \Sprout\Sprout                                    $sprout
      * @param \Sprout\Bud\Bud                                   $bud
      * @param array<string, mixed>&array{budStore?:string|null} $config
@@ -53,11 +60,13 @@ abstract class BaseCreator
         // is one.
         $store = $bud->store($config['budStore'] ?? null);
 
+        $service = $this->getService();
+
         // Get the config for the connection from the store.
         $budConfig = $store->get(
             $tenancy,
             $tenant,
-            'database',
+            $service,
             $name,
         );
 
@@ -65,8 +74,8 @@ abstract class BaseCreator
         if ($budConfig === null) {
             // TODO: Throw a better exception
             throw new RuntimeException(sprintf(
-                'Unable to find database configuration for connection [%s] for tenant [%s] on tenancy [%s]',
-                $name,
+                'Unable to find configuration for [%s] for tenant [%s] on tenancy [%s]',
+                $service . '.' . $name,
                 $tenant->getTenantIdentifier(),
                 $tenancy->getName()
             ));

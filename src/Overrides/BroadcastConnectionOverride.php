@@ -5,6 +5,7 @@ namespace Sprout\Bud\Overrides;
 
 use Closure;
 use Illuminate\Broadcasting\BroadcastManager;
+use Illuminate\Contracts\Foundation\Application;
 use LogicException;
 use Sprout\Bud\Bud;
 use Sprout\Bud\Overrides\Broadcast\BudBroadcastConnectionCreator;
@@ -51,7 +52,7 @@ final class BroadcastConnectionOverride extends BaseOverride implements Bootable
         }
 
         // Add a bud driver.
-        $service->extend('bud', function (array $config) use ($service, $bud, $sprout, $tracker) {
+        $service->extend('bud', function (Application $app, array $config) use ($service, $bud, $sprout, $tracker) {
             /** @var array<string, mixed>&array{budStore?:string|null,name?:string|null} $config */
             // If the config contains the disk name
             if (isset($config['name'])) {

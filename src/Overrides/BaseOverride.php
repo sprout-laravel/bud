@@ -35,7 +35,7 @@ abstract class BaseOverride extends SproutBaseOverride
      *
      * @return string[]
      */
-    protected function getOverrides(): array
+    public function getOverrides(): array
     {
         return $this->overrides;
     }
@@ -127,6 +127,8 @@ abstract class BaseOverride extends SproutBaseOverride
                 foreach ($overrides as $override) {
                     $this->cleanupOverride($service, $override);
                 }
+
+                $this->overrides = [];
             }
         }
     }

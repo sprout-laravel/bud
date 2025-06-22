@@ -7,7 +7,7 @@ use Illuminate\Broadcasting\BroadcastManager;
 use Illuminate\Contracts\Broadcasting\Broadcaster;
 use InvalidArgumentException;
 
-final class BudBroadcastManager extends BroadcastManager
+class BudBroadcastManager extends BroadcastManager
 {
     protected bool $syncedFromOriginal = false;
 
@@ -59,6 +59,8 @@ final class BudBroadcastManager extends BroadcastManager
             $this->purge($name);
         }
 
+        $config['name'] = $name;
+
         /** @var \Illuminate\Contracts\Broadcasting\Broadcaster */
         return $this->drivers[$name] ?? ($this->drivers[$name] = $this->resolveUsing($config));
     }
@@ -96,6 +98,10 @@ final class BudBroadcastManager extends BroadcastManager
      */
     public function resolveUsing(array $config): Broadcaster
     {
+        if (empty($config['driver'])) {
+            throw new InvalidArgumentException("Broadcast connection [{$config['name']}] does not have a configured driver.");
+        }
+
         if (isset($this->customCreators[$config['driver']])) {
             /** @var \Illuminate\Contracts\Broadcasting\Broadcaster */
             return $this->callCustomCreator($config);

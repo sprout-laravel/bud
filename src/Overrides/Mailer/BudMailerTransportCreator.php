@@ -4,7 +4,6 @@ declare(strict_types=1);
 namespace Sprout\Bud\Overrides\Mailer;
 
 use Illuminate\Mail\MailManager;
-use RuntimeException;
 use Sprout\Bud\Bud;
 use Sprout\Bud\Overrides\BaseCreator;
 use Sprout\Sprout;
@@ -72,5 +71,15 @@ final class BudMailerTransportCreator extends BaseCreator
         );
 
         return $this->manager->createSymfonyTransport($config);
+    }
+
+    /**
+     * Get the name of the service for the creator.
+     *
+     * @return string
+     */
+    protected function getService(): string
+    {
+        return 'broadcast';
     }
 }
