@@ -7,20 +7,17 @@ use Illuminate\Broadcasting\Broadcasters\NullBroadcaster;
 use Illuminate\Broadcasting\BroadcastManager;
 use Illuminate\Config\Repository;
 use Illuminate\Contracts\Broadcasting\Broadcaster;
-use Illuminate\Contracts\Filesystem\Filesystem;
-use Illuminate\Filesystem\LocalFilesystemAdapter;
 use Illuminate\Foundation\Application;
 use InvalidArgumentException;
 use Mockery;
 use PHPUnit\Framework\Attributes\Test;
 use Sprout\Bud\Overrides\Broadcast\BudBroadcastManager;
 use Sprout\Bud\Tests\Unit\UnitTestCase;
-use Sprout\Overrides\Filesystem\SproutFilesystemManager;
 
 class BudBroadcastManagerTest extends UnitTestCase
 {
     #[Test]
-    public function canBySyncedFromOriginal(): void
+    public function canBeSyncedFromOriginal(): void
     {
         $original = Mockery::mock(BroadcastManager::class);
 
