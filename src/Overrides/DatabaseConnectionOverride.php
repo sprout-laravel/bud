@@ -4,6 +4,8 @@ declare(strict_types=1);
 namespace Sprout\Bud\Overrides;
 
 use Closure;
+use Illuminate\Database\Connection;
+use PDO;
 use Sprout\Bud\Bud;
 use Sprout\Bud\Overrides\Database\BudDatabaseConnectionCreator;
 use Sprout\Contracts\BootableServiceOverride;
