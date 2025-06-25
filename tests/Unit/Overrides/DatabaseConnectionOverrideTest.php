@@ -541,8 +541,10 @@ class BroadcastOverrideTest extends UnitTestCase
     public static function broadcastResolvedDataProvider(): array
     {
         return [
-            'broadcast resolved'     => [true],
-            'broadcast not resolved' => [false],
+            'cache resolved no manager override'     => [true],
+            'cache not resolved no manager override' => [false],
+            'cache resolved manager override'        => [true],
+            'cache not resolved  manager override'   => [false],
         ];
     }
 }

@@ -113,7 +113,7 @@ abstract class BaseOverride extends SproutBaseOverride
     public function cleanup(Tenancy $tenancy, Tenant $tenant): void
     {
         if ($this->tracksOverrides === false) {
-            return;
+            return; // @codeCoverageIgnore
         }
 
         // If the service was resolved, we need to clear it up.
