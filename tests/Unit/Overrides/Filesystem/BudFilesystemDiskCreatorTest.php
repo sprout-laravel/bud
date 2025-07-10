@@ -5,11 +5,13 @@ namespace Sprout\Bud\Tests\Unit\Overrides\Filesystem;
 
 use Illuminate\Contracts\Filesystem\Filesystem;
 use Illuminate\Foundation\Application;
+use InvalidArgumentException;
 use Mockery;
 use PHPUnit\Framework\Attributes\Test;
 use Sprout\Bud\Bud;
 use Sprout\Bud\Contracts\ConfigStore;
 use Sprout\Bud\Managers\ConfigStoreManager;
+use Sprout\Bud\Overrides\Broadcast\BudBroadcastConnectionCreator;
 use Sprout\Bud\Overrides\Filesystem\BudFilesystemDiskCreator;
 use Sprout\Bud\Tests\Unit\UnitTestCase;
 use Sprout\Contracts\Tenancy;
@@ -123,6 +125,32 @@ class BudFilesystemDiskCreatorTest extends UnitTestCase
             $sprout,
             $config,
         );
+
+        $creator();
+    }
+
+    #[Test]
+    public function throwsAnExceptionWhenConfigIsMissingName(): void
+    {
+        $app     = $this->mockApplication();
+        $manager = $this->mockManager(false);
+        $config  = [];
+        $sprout  = $this->getSprout($app, false, false);
+        $bud     = $this->getBud($app, $this->mockConfigStoreManager());
+
+        $sprout->markAsOutsideContext();
+
+        $this->assertFalse($sprout->withinContext());
+
+        $creator = new BudFilesystemDiskCreator(
+            $manager,
+            $bud,
+            $sprout,
+            $config,
+        );
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Filesystem disk name must be provided');
 
         $creator();
     }
