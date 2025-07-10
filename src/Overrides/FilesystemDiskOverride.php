@@ -61,7 +61,7 @@ final class FilesystemDiskOverride extends BaseOverride implements BootableServi
                 $tracker($config['name']);
             }
 
-            return (new BudFilesystemDiskCreator($service, $bud, $sprout, $config['name'], $config))();
+            return (new BudFilesystemDiskCreator($service, $bud, $sprout, $config))();
         });
     }
 

@@ -5,6 +5,7 @@ namespace Sprout\Bud\Overrides\Filesystem;
 
 use Illuminate\Contracts\Filesystem\Filesystem;
 use Illuminate\Filesystem\FilesystemManager;
+use InvalidArgumentException;
 use Sprout\Bud\Bud;
 use Sprout\Bud\Overrides\BaseCreator;
 use Sprout\Sprout;
@@ -23,32 +24,27 @@ final class BudFilesystemDiskCreator extends BaseCreator
 
     private Sprout $sprout;
 
-    private string $name;
-
     /**
-     * @var array<string, mixed>&array{budStore?:string|null}
+     * @var array<string, mixed>&array{budStore?:string|null,name?:mixed}
      */
     private array $config;
 
     /**
-     * @param \Illuminate\Filesystem\FilesystemManager          $manager
-     * @param \Sprout\Bud\Bud                                   $bud
-     * @param \Sprout\Sprout                                    $sprout
-     * @param string                                            $name
-     * @param array<string, mixed>&array{budStore?:string|null} $config
+     * @param \Illuminate\Filesystem\FilesystemManager                      $manager
+     * @param \Sprout\Bud\Bud                                               $bud
+     * @param \Sprout\Sprout                                                $sprout
+     * @param array<string, mixed>&array{budStore?:string|null,name?:mixed} $config
      */
     public function __construct(
         FilesystemManager $manager,
         Bud               $bud,
         Sprout            $sprout,
-        string            $name,
         array             $config
     )
     {
         $this->manager = $manager;
         $this->bud     = $bud;
         $this->sprout  = $sprout;
-        $this->name    = $name;
         $this->config  = $config;
     }
 
@@ -63,19 +59,23 @@ final class BudFilesystemDiskCreator extends BaseCreator
      */
     public function __invoke(): Filesystem
     {
-        /** @var array<string, mixed>&array{driver?:string|null} $config */
-        $config = $this->getConfig($this->sprout, $this->bud, $this->config, $this->name);
+        if (! isset($this->config['name']) || ! is_string($this->config['name'])) {
+            throw new InvalidArgumentException('Filesystem disk name must be provided.');
+        }
+
+        /** @var array<string, mixed>&array{driver?:string|null,name:string} $config */
+        $config = $this->getConfig($this->sprout, $this->bud, $this->config, $this->config['name']);
 
         // We need to make sure that this isn't going to recurse infinitely.
         $this->checkForCyclicDrivers(
             $config['driver'] ?? null,
             'filesystem disk',
-            $this->name
+            $config['name']
         );
 
         return $this->manager->build(
             array_merge([
-                'name' => $this->name,
+                'name' => $config['name'],
             ], $config)
         );
     }

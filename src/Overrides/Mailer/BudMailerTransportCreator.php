@@ -81,6 +81,6 @@ final class BudMailerTransportCreator extends BaseCreator
      */
     protected function getService(): string
     {
-        return BroadcastManager::class;
+        return 'mailer';
     }
 }
