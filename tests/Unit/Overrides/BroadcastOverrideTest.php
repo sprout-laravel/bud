@@ -355,7 +355,7 @@ class BroadcastOverrideTest extends UnitTestCase
     #[Test]
     public function cleansUpResolvedDrivers(): void
     {
-        $override = new StackedOverride('filesystem', [
+        $override = new StackedOverride('broadcast', [
             'overrides' => [
                 BroadcastManagerOverride::class,
                 BroadcastConnectionOverride::class,
@@ -423,7 +423,7 @@ class BroadcastOverrideTest extends UnitTestCase
     #[Test]
     public function cleansUpResolvedDriversFromPreconfiguredConnections(): void
     {
-        $override = new StackedOverride('filesystem', [
+        $override = new StackedOverride('broadcast', [
             'overrides' => [
                 BroadcastManagerOverride::class,
                 BroadcastConnectionOverride::class,
@@ -493,7 +493,7 @@ class BroadcastOverrideTest extends UnitTestCase
     #[Test]
     public function cleansUpNothingWithoutResolvedDrivers(): void
     {
-        $override = new StackedOverride('filesystem', [
+        $override = new StackedOverride('broadcast', [
             'overrides' => [
                 BroadcastManagerOverride::class,
                 BroadcastConnectionOverride::class,
