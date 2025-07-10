@@ -1,18 +1,17 @@
 <?php
 declare(strict_types=1);
 
-namespace Sprout\Bud\Tests\Unit\Overrides\Broadcast;
+namespace Sprout\Bud\Tests\Unit\Overrides\Database;
 
-use Illuminate\Contracts\Broadcasting\Broadcaster;
+use Illuminate\Database\ConnectionInterface;
+use Illuminate\Database\DatabaseManager;
 use Illuminate\Foundation\Application;
-use InvalidArgumentException;
 use Mockery;
 use PHPUnit\Framework\Attributes\Test;
 use Sprout\Bud\Bud;
 use Sprout\Bud\Contracts\ConfigStore;
 use Sprout\Bud\Managers\ConfigStoreManager;
-use Sprout\Bud\Overrides\Broadcast\BudBroadcastConnectionCreator;
-use Sprout\Bud\Overrides\Broadcast\BudBroadcastManager;
+use Sprout\Bud\Overrides\Database\BudDatabaseConnectionCreator;
 use Sprout\Bud\Tests\Unit\UnitTestCase;
 use Sprout\Contracts\Tenancy;
 use Sprout\Contracts\Tenant;
@@ -22,7 +21,7 @@ use Sprout\Exceptions\TenantMissingException;
 use Sprout\Sprout;
 use Sprout\Support\SettingsRepository;
 
-class BudBroadcastConnectionCreatorTest extends UnitTestCase
+class BudDatabaseConnectionCreatorTest extends UnitTestCase
 {
     private function mockApplication(bool $default = false): Application&Mockery\MockInterface
     {
@@ -31,9 +30,9 @@ class BudBroadcastConnectionCreatorTest extends UnitTestCase
         });
     }
 
-    private function mockManager(bool $driver = true): BudBroadcastManager&Mockery\MockInterface
+    private function mockManager(bool $driver = true): DatabaseManager&Mockery\MockInterface
     {
-        return Mockery::mock(BudBroadcastManager::class, static function (Mockery\MockInterface $mock) use ($driver) {
+        return Mockery::mock(DatabaseManager::class, static function (Mockery\MockInterface $mock) use ($driver) {
             if ($driver) {
                 $mock->shouldReceive('connectUsing')
                      ->with(
@@ -41,7 +40,7 @@ class BudBroadcastConnectionCreatorTest extends UnitTestCase
                          ['name' => 'fake-connection', 'driver' => 'null'],
                          true
                      )
-                     ->andReturn(Mockery::mock(Broadcaster::class))
+                     ->andReturn(Mockery::mock(ConnectionInterface::class))
                      ->once();
             }
         });
@@ -58,7 +57,7 @@ class BudBroadcastConnectionCreatorTest extends UnitTestCase
                               ->with(
                                   $tenancy,
                                   $tenant,
-                                  'broadcast',
+                                  'database',
                                   'fake-connection'
                               )
                               ->andReturn([
@@ -120,38 +119,13 @@ class BudBroadcastConnectionCreatorTest extends UnitTestCase
         $sprout  = $this->getSprout($app);
         $bud     = $this->getBud($app, $this->mockConfigStoreManager($sprout->getCurrentTenancy(), $sprout->getCurrentTenancy()->tenant()));
 
-        $creator = new BudBroadcastConnectionCreator(
+        $creator = new BudDatabaseConnectionCreator(
             $manager,
             $bud,
             $sprout,
+            'fake-connection',
             $config,
         );
-
-        $creator();
-    }
-
-    #[Test]
-    public function throwsAnExceptionWhenConfigIsMissingName(): void
-    {
-        $app     = $this->mockApplication();
-        $manager = $this->mockManager(false);
-        $config  = [];
-        $sprout  = $this->getSprout($app, false, false);
-        $bud     = $this->getBud($app, $this->mockConfigStoreManager());
-
-        $sprout->markAsOutsideContext();
-
-        $this->assertFalse($sprout->withinContext());
-
-        $creator = new BudBroadcastConnectionCreator(
-            $manager,
-            $bud,
-            $sprout,
-            $config
-        );
-
-        $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('Broadcast connection name must be provided');
 
         $creator();
     }
@@ -171,11 +145,12 @@ class BudBroadcastConnectionCreatorTest extends UnitTestCase
 
         $this->assertFalse($sprout->withinContext());
 
-        $creator = new BudBroadcastConnectionCreator(
+        $creator = new BudDatabaseConnectionCreator(
             $manager,
             $bud,
             $sprout,
-            $config
+            'fake-connection',
+            $config,
         );
 
         $this->expectException(TenancyMissingException::class);
@@ -199,11 +174,12 @@ class BudBroadcastConnectionCreatorTest extends UnitTestCase
 
         $this->assertTrue($sprout->withinContext());
 
-        $creator = new BudBroadcastConnectionCreator(
+        $creator = new BudDatabaseConnectionCreator(
             $manager,
             $bud,
             $sprout,
-            $config
+            'fake-connection',
+            $config,
         );
 
         $this->expectException(TenancyMissingException::class);
@@ -225,11 +201,12 @@ class BudBroadcastConnectionCreatorTest extends UnitTestCase
 
         $this->assertTrue($sprout->withinContext());
 
-        $creator = new BudBroadcastConnectionCreator(
+        $creator = new BudDatabaseConnectionCreator(
             $manager,
             $bud,
             $sprout,
-            $config
+            'fake-connection',
+            $config,
         );
 
         $this->expectException(TenantMissingException::class);

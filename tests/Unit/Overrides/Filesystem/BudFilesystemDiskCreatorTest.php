@@ -1,28 +1,27 @@
 <?php
 declare(strict_types=1);
 
-namespace Sprout\Bud\Tests\Unit\Overrides\Broadcast;
+namespace Sprout\Bud\Tests\Unit\Overrides\Filesystem;
 
-use Illuminate\Contracts\Broadcasting\Broadcaster;
+use Illuminate\Contracts\Filesystem\Filesystem;
 use Illuminate\Foundation\Application;
-use InvalidArgumentException;
 use Mockery;
 use PHPUnit\Framework\Attributes\Test;
 use Sprout\Bud\Bud;
 use Sprout\Bud\Contracts\ConfigStore;
 use Sprout\Bud\Managers\ConfigStoreManager;
-use Sprout\Bud\Overrides\Broadcast\BudBroadcastConnectionCreator;
-use Sprout\Bud\Overrides\Broadcast\BudBroadcastManager;
+use Sprout\Bud\Overrides\Filesystem\BudFilesystemDiskCreator;
 use Sprout\Bud\Tests\Unit\UnitTestCase;
 use Sprout\Contracts\Tenancy;
 use Sprout\Contracts\Tenant;
 use Sprout\Contracts\TenantHasResources;
 use Sprout\Exceptions\TenancyMissingException;
 use Sprout\Exceptions\TenantMissingException;
+use Sprout\Overrides\Filesystem\SproutFilesystemManager;
 use Sprout\Sprout;
 use Sprout\Support\SettingsRepository;
 
-class BudBroadcastConnectionCreatorTest extends UnitTestCase
+class BudFilesystemDiskCreatorTest extends UnitTestCase
 {
     private function mockApplication(bool $default = false): Application&Mockery\MockInterface
     {
@@ -31,17 +30,15 @@ class BudBroadcastConnectionCreatorTest extends UnitTestCase
         });
     }
 
-    private function mockManager(bool $driver = true): BudBroadcastManager&Mockery\MockInterface
+    private function mockManager(bool $driver = true): SproutFilesystemManager&Mockery\MockInterface
     {
-        return Mockery::mock(BudBroadcastManager::class, static function (Mockery\MockInterface $mock) use ($driver) {
+        return Mockery::mock(SproutFilesystemManager::class, static function (Mockery\MockInterface $mock) use ($driver) {
             if ($driver) {
-                $mock->shouldReceive('connectUsing')
+                $mock->shouldReceive('build')
                      ->with(
-                         'fake-connection',
-                         ['name' => 'fake-connection', 'driver' => 'null'],
-                         true
+                         ['name' => 'fake-disk', 'driver' => 'null'],
                      )
-                     ->andReturn(Mockery::mock(Broadcaster::class))
+                     ->andReturn(Mockery::mock(Filesystem::class))
                      ->once();
             }
         });
@@ -58,8 +55,8 @@ class BudBroadcastConnectionCreatorTest extends UnitTestCase
                               ->with(
                                   $tenancy,
                                   $tenant,
-                                  'broadcast',
-                                  'fake-connection'
+                                  'filesystem',
+                                  'fake-disk'
                               )
                               ->andReturn([
                                   'driver' => 'null',
@@ -114,13 +111,13 @@ class BudBroadcastConnectionCreatorTest extends UnitTestCase
         $app     = $this->mockApplication();
         $manager = $this->mockManager();
         $config  = [
-            'name'   => 'fake-connection',
+            'name'   => 'fake-disk',
             'driver' => 'fake-driver',
         ];
         $sprout  = $this->getSprout($app);
         $bud     = $this->getBud($app, $this->mockConfigStoreManager($sprout->getCurrentTenancy(), $sprout->getCurrentTenancy()->tenant()));
 
-        $creator = new BudBroadcastConnectionCreator(
+        $creator = new BudFilesystemDiskCreator(
             $manager,
             $bud,
             $sprout,
@@ -131,38 +128,12 @@ class BudBroadcastConnectionCreatorTest extends UnitTestCase
     }
 
     #[Test]
-    public function throwsAnExceptionWhenConfigIsMissingName(): void
-    {
-        $app     = $this->mockApplication();
-        $manager = $this->mockManager(false);
-        $config  = [];
-        $sprout  = $this->getSprout($app, false, false);
-        $bud     = $this->getBud($app, $this->mockConfigStoreManager());
-
-        $sprout->markAsOutsideContext();
-
-        $this->assertFalse($sprout->withinContext());
-
-        $creator = new BudBroadcastConnectionCreator(
-            $manager,
-            $bud,
-            $sprout,
-            $config
-        );
-
-        $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('Broadcast connection name must be provided');
-
-        $creator();
-    }
-
-    #[Test]
     public function throwsAnExceptionWhenOutsideOfContext(): void
     {
         $app     = $this->mockApplication();
         $manager = $this->mockManager(false);
         $config  = [
-            'name' => 'fake-connection',
+            'name' => 'fake-disk',
         ];
         $sprout  = $this->getSprout($app, false, false);
         $bud     = $this->getBud($app, $this->mockConfigStoreManager());
@@ -171,11 +142,11 @@ class BudBroadcastConnectionCreatorTest extends UnitTestCase
 
         $this->assertFalse($sprout->withinContext());
 
-        $creator = new BudBroadcastConnectionCreator(
+        $creator = new BudFilesystemDiskCreator(
             $manager,
             $bud,
             $sprout,
-            $config
+            $config,
         );
 
         $this->expectException(TenancyMissingException::class);
@@ -190,7 +161,7 @@ class BudBroadcastConnectionCreatorTest extends UnitTestCase
         $app     = $this->mockApplication();
         $manager = $this->mockManager(false);
         $config  = [
-            'name' => 'fake-connection',
+            'name' => 'fake-disk',
         ];
         $sprout  = $this->getSprout($app, false, false);
         $bud     = $this->getBud($app, $this->mockConfigStoreManager());
@@ -199,11 +170,11 @@ class BudBroadcastConnectionCreatorTest extends UnitTestCase
 
         $this->assertTrue($sprout->withinContext());
 
-        $creator = new BudBroadcastConnectionCreator(
+        $creator = new BudFilesystemDiskCreator(
             $manager,
             $bud,
             $sprout,
-            $config
+            $config,
         );
 
         $this->expectException(TenancyMissingException::class);
@@ -218,18 +189,18 @@ class BudBroadcastConnectionCreatorTest extends UnitTestCase
         $app     = $this->mockApplication();
         $manager = $this->mockManager(false);
         $config  = [
-            'name' => 'fake-connection',
+            'name' => 'fake-disk',
         ];
         $sprout  = $this->getSprout($app, true, false);
         $bud     = $this->getBud($app, $this->mockConfigStoreManager());
 
         $this->assertTrue($sprout->withinContext());
 
-        $creator = new BudBroadcastConnectionCreator(
+        $creator = new BudFilesystemDiskCreator(
             $manager,
             $bud,
             $sprout,
-            $config
+            $config,
         );
 
         $this->expectException(TenantMissingException::class);
