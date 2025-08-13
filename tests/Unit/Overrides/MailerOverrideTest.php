@@ -131,7 +131,7 @@ class MailerOverrideTest extends UnitTestCase
             $mock->makePartial();
         });
 
-        $app->make('config')->set('multitenancy.defaults.config', 'mailer');
+        $app->make('config')->set('multitenancy.defaults.config', 'filesystem');
         $app->make('config')->set('mail.mailers.bud-mailer', [
             'transport' => 'bud',
         ]);
@@ -178,7 +178,7 @@ class MailerOverrideTest extends UnitTestCase
             $mock->makePartial();
         });
 
-        $app->make('config')->set('multitenancy.defaults.config', 'mailer');
+        $app->make('config')->set('multitenancy.defaults.config', 'filesystem');
         $app->make('config')->set('mail.mailers.bud-mailer', [
             'transport' => 'bud',
         ]);
@@ -236,7 +236,7 @@ class MailerOverrideTest extends UnitTestCase
             $mock->makePartial();
         });
 
-        $app->make('config')->set('multitenancy.defaults.config', 'mailer');
+        $app->make('config')->set('multitenancy.defaults.config', 'filesystem');
         $app->make('config')->set('mail.mailers.bud-mailer', [
             'transport' => 'bud',
         ]);
@@ -301,7 +301,7 @@ class MailerOverrideTest extends UnitTestCase
             $mock->makePartial();
         });
 
-        $app->make('config')->set('multitenancy.defaults.config', 'mailer');
+        $app->make('config')->set('multitenancy.defaults.config', 'filesystem');
         $app->make('config')->set('mail.mailers.bud-mailer', [
             'transport' => 'bud',
         ]);
