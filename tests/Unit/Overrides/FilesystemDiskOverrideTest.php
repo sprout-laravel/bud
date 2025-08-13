@@ -170,7 +170,7 @@ class FilesystemDiskOverrideTest extends UnitTestCase
     #[Test]
     public function errorsWithNoTenantSpecificConfig(): void
     {
-        $override = new StackedOverride('broadcast', [
+        $override = new StackedOverride('filesystem', [
             'overrides' => [
                 FilesystemManagerOverride::class,
                 FilesystemDiskOverride::class,
@@ -230,7 +230,7 @@ class FilesystemDiskOverrideTest extends UnitTestCase
     #[Test]
     public function errorsIfOverriddenConnectionAlsoUsesBud(): void
     {
-        $override = new StackedOverride('broadcast', [
+        $override = new StackedOverride('filesystem', [
             'overrides' => [
                 FilesystemManagerOverride::class,
                 FilesystemDiskOverride::class,

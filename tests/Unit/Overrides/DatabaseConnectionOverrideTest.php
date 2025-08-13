@@ -4,7 +4,6 @@ declare(strict_types=1);
 namespace Sprout\Bud\Tests\Unit\Overrides;
 
 use Closure;
-use Illuminate\Broadcasting\BroadcastManager;
 use Illuminate\Config\Repository;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Database\DatabaseManager;
@@ -16,15 +15,12 @@ use Sprout\Bud\Bud;
 use Sprout\Bud\Contracts\ConfigStore;
 use Sprout\Bud\Exceptions\CyclicOverrideException;
 use Sprout\Bud\Managers\ConfigStoreManager;
-use Sprout\Bud\Overrides\BroadcastConnectionOverride;
-use Sprout\Bud\Overrides\BroadcastManagerOverride;
 use Sprout\Bud\Overrides\DatabaseConnectionOverride;
 use Sprout\Bud\Tests\Unit\UnitTestCase;
 use Sprout\Contracts\BootableServiceOverride;
 use Sprout\Contracts\Tenancy;
 use Sprout\Contracts\Tenant;
 use Sprout\Contracts\TenantHasResources;
-use Sprout\Overrides\StackedOverride;
 use Sprout\Sprout;
 use Sprout\Support\SettingsRepository;
 use function Sprout\sprout;
@@ -241,7 +237,7 @@ class DatabaseConnectionOverrideTest extends UnitTestCase
     {
         $override = new DatabaseConnectionOverride('database', []);
 
-        $this->app->forgetInstance(BroadcastManager::class);
+        $this->app->forgetInstance('db');
 
         /** @var \Illuminate\Foundation\Application&MockInterface $app */
         $app = Mockery::mock($this->app, static function (MockInterface $mock) {
@@ -304,7 +300,7 @@ class DatabaseConnectionOverrideTest extends UnitTestCase
     {
         $override = new DatabaseConnectionOverride('database', []);
 
-        $this->app->forgetInstance(BroadcastManager::class);
+        $this->app->forgetInstance('db');
 
         /** @var \Illuminate\Foundation\Application&MockInterface $app */
         $app = Mockery::mock($this->app, static function (MockInterface $mock) {
