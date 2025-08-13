@@ -329,8 +329,6 @@ class DatabaseConnectionOverrideTest extends UnitTestCase
 
         $this->assertEmpty($override->getOverrides());
 
-        $this->assertEmpty($override->getOverrides());
-
         $override->cleanup($tenancy, $tenant);
 
         $this->assertEmpty($override->getOverrides());

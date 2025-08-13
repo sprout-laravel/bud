@@ -12,10 +12,10 @@ use Sprout\Overrides\Filesystem\SproutFilesystemManager;
 use Sprout\Sprout;
 
 /**
- * Database Connection Override
+ * Filesystem Disk Override
  *
- * This override specifically allows for the creation of database connections
- * using Bud config store.
+ * This override specifically allows for the creation of filesystem disks
+ * using the Bud config store.
  *
  * @extends \Sprout\Bud\Overrides\BaseOverride<\Illuminate\Filesystem\FilesystemManager>
  */
