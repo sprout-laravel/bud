@@ -3,7 +3,6 @@ declare(strict_types=1);
 
 namespace Sprout\Bud\Overrides\Mailer;
 
-use Illuminate\Broadcasting\BroadcastManager;
 use Illuminate\Mail\MailManager;
 use Sprout\Bud\Bud;
 use Sprout\Bud\Overrides\BaseCreator;
