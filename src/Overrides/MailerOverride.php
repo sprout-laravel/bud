@@ -50,7 +50,7 @@ final class MailerOverride extends BaseOverride
              */
 
             if (! isset($config['name']) || ! is_string($config['name']) || $config['name'] === '') {
-                throw new RuntimeException('Cannot create a mailer using bud without a name');
+                throw new RuntimeException('Cannot create a mailer using bud without a name'); // @codeCoverageIgnore
             }
 
             // Track the mailer name.
