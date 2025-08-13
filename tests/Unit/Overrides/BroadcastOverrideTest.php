@@ -531,8 +531,6 @@ class BroadcastOverrideTest extends UnitTestCase
 
         $this->assertEmpty($broadcastOverride->getOverrides());
 
-        $this->assertEmpty($broadcastOverride->getOverrides());
-
         $override->cleanup($tenancy, $tenant);
 
         $this->assertEmpty($broadcastOverride->getOverrides());
