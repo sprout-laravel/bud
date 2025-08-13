@@ -11,9 +11,9 @@ use Sprout\Bud\Overrides\BaseCreator;
 use Sprout\Sprout;
 
 /**
- * Bud Database Connection Creator
+ * Bud Filesystem Disk Creator
  *
- * This class is an abstraction for the logic that creates a database connection
+ * This class is an abstraction for the logic that creates a filesystem disk
  * using a config store within Bud.
  */
 final class BudFilesystemDiskCreator extends BaseCreator
