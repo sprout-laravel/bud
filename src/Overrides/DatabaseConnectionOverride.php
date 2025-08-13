@@ -4,11 +4,8 @@ declare(strict_types=1);
 namespace Sprout\Bud\Overrides;
 
 use Closure;
-use Illuminate\Database\Connection;
-use PDO;
 use Sprout\Bud\Bud;
 use Sprout\Bud\Overrides\Database\BudDatabaseConnectionCreator;
-use Sprout\Contracts\BootableServiceOverride;
 use Sprout\Sprout;
 
 /**
@@ -19,7 +16,7 @@ use Sprout\Sprout;
  *
  * @extends \Sprout\Bud\Overrides\BaseOverride<\Illuminate\Database\DatabaseManager>
  */
-final class DatabaseConnectionOverride extends BaseOverride implements BootableServiceOverride
+final class DatabaseConnectionOverride extends BaseOverride
 {
     /**
      * Get the name of the service being overridden.

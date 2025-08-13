@@ -7,11 +7,10 @@ use Illuminate\Broadcasting\BroadcastManager;
 use Illuminate\Contracts\Container\Container;
 use Illuminate\Contracts\Foundation\Application;
 use Sprout\Bud\Overrides\Broadcast\BudBroadcastManager;
-use Sprout\Contracts\BootableServiceOverride;
 use Sprout\Overrides\BaseOverride;
 use Sprout\Sprout;
 
-final class BroadcastManagerOverride extends BaseOverride implements BootableServiceOverride
+final class BroadcastManagerOverride extends BaseOverride
 {
     /**
      * Boot a service override

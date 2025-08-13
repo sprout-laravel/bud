@@ -10,7 +10,6 @@ use LogicException;
 use Sprout\Bud\Bud;
 use Sprout\Bud\Overrides\Broadcast\BudBroadcastConnectionCreator;
 use Sprout\Bud\Overrides\Broadcast\BudBroadcastManager;
-use Sprout\Contracts\BootableServiceOverride;
 use Sprout\Sprout;
 
 /**
@@ -21,7 +20,7 @@ use Sprout\Sprout;
  *
  * @extends \Sprout\Bud\Overrides\BaseOverride<\Illuminate\Broadcasting\BroadcastManager>
  */
-final class BroadcastConnectionOverride extends BaseOverride implements BootableServiceOverride
+final class BroadcastConnectionOverride extends BaseOverride
 {
     /**
      * Get the name of the service being overridden.

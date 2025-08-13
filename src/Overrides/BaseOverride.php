@@ -6,6 +6,7 @@ namespace Sprout\Bud\Overrides;
 use Closure;
 use Illuminate\Contracts\Foundation\Application;
 use Sprout\Bud\Bud;
+use Sprout\Contracts\BootableServiceOverride;
 use Sprout\Contracts\Tenancy;
 use Sprout\Contracts\Tenant;
 use Sprout\Overrides\BaseOverride as SproutBaseOverride;
@@ -14,7 +15,7 @@ use Sprout\Sprout;
 /**
  * @template OverrideService of object
  */
-abstract class BaseOverride extends SproutBaseOverride
+abstract class BaseOverride extends SproutBaseOverride implements BootableServiceOverride
 {
     /**
      * @var array<string>

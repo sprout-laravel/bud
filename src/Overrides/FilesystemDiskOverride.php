@@ -7,9 +7,7 @@ use Closure;
 use Illuminate\Contracts\Foundation\Application;
 use LogicException;
 use Sprout\Bud\Bud;
-use Sprout\Bud\Overrides\Broadcast\BudBroadcastManager;
 use Sprout\Bud\Overrides\Filesystem\BudFilesystemDiskCreator;
-use Sprout\Contracts\BootableServiceOverride;
 use Sprout\Overrides\Filesystem\SproutFilesystemManager;
 use Sprout\Sprout;
 
@@ -21,7 +19,7 @@ use Sprout\Sprout;
  *
  * @extends \Sprout\Bud\Overrides\BaseOverride<\Illuminate\Filesystem\FilesystemManager>
  */
-final class FilesystemDiskOverride extends BaseOverride implements BootableServiceOverride
+final class FilesystemDiskOverride extends BaseOverride
 {
     /**
      * Get the name of the service being overridden.

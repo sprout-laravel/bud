@@ -7,7 +7,6 @@ use Closure;
 use RuntimeException;
 use Sprout\Bud\Bud;
 use Sprout\Bud\Overrides\Mailer\BudMailerTransportCreator;
-use Sprout\Contracts\BootableServiceOverride;
 use Sprout\Sprout;
 
 /**
@@ -18,7 +17,7 @@ use Sprout\Sprout;
  *
  * @extends \Sprout\Bud\Overrides\BaseOverride<\Illuminate\Mail\MailManager>
  */
-final class MailerOverride extends BaseOverride implements BootableServiceOverride
+final class MailerOverride extends BaseOverride
 {
     /**
      * Get the name of the service being overridden.
