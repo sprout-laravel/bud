@@ -20,7 +20,7 @@ abstract class BaseOverride extends SproutBaseOverride implements BootableServic
     /**
      * @var array<string>
      */
-    private array $overrides = [];
+    protected array $overrides = [];
 
     protected bool $tracksOverrides = true;
 
