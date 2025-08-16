@@ -3,16 +3,13 @@ declare(strict_types=1);
 
 namespace Sprout\Bud\Tests\Unit\Overrides\Mailer;
 
-use Illuminate\Contracts\Filesystem\Filesystem;
 use Illuminate\Foundation\Application;
 use Illuminate\Mail\MailManager;
-use InvalidArgumentException;
 use Mockery;
 use PHPUnit\Framework\Attributes\Test;
 use Sprout\Bud\Bud;
 use Sprout\Bud\Contracts\ConfigStore;
 use Sprout\Bud\Managers\ConfigStoreManager;
-use Sprout\Bud\Overrides\Filesystem\BudFilesystemDiskCreator;
 use Sprout\Bud\Overrides\Mailer\BudMailerTransportCreator;
 use Sprout\Bud\Tests\Unit\UnitTestCase;
 use Sprout\Contracts\Tenancy;
@@ -20,7 +17,6 @@ use Sprout\Contracts\Tenant;
 use Sprout\Contracts\TenantHasResources;
 use Sprout\Exceptions\TenancyMissingException;
 use Sprout\Exceptions\TenantMissingException;
-use Sprout\Overrides\Filesystem\SproutFilesystemManager;
 use Sprout\Sprout;
 use Sprout\Support\SettingsRepository;
 use Symfony\Component\Mailer\Transport\TransportInterface;
@@ -83,8 +79,6 @@ class BudMailerCreatorTest extends UnitTestCase
             } else {
                 $tenant = Mockery::mock(Tenant::class);
             }
-
-
         } else {
             $tenant = null;
         }

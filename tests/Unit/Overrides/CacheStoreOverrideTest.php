@@ -168,7 +168,7 @@ class CacheStoreOverrideTest extends UnitTestCase
     #[Test]
     public function keepsTrackOfResolvedBudDrivers(): void
     {
-        $override = new CacheStoreOverride('mailer', []);
+        $override = new CacheStoreOverride('cache', []);
 
         /** @var \Illuminate\Foundation\Application&MockInterface $app */
         $app = Mockery::mock($this->app, static function (MockInterface $mock) {
@@ -223,7 +223,7 @@ class CacheStoreOverrideTest extends UnitTestCase
     #[Test]
     public function cleansUpResolvedDrivers(): void
     {
-        $override = new CacheStoreOverride('mailer', []);
+        $override = new CacheStoreOverride('cache', []);
 
         $this->app->forgetInstance('cache');
 
@@ -287,7 +287,7 @@ class CacheStoreOverrideTest extends UnitTestCase
     #[Test]
     public function cleansUpNothingWithoutResolvedDrivers(): void
     {
-        $override = new CacheStoreOverride('mailer', []);
+        $override = new CacheStoreOverride('cache', []);
 
         $this->app->forgetInstance('cache');
 
