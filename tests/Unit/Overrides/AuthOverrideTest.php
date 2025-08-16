@@ -5,7 +5,6 @@ namespace Sprout\Bud\Tests\Unit\Overrides;
 
 use Closure;
 use Illuminate\Auth\AuthManager;
-use Illuminate\Broadcasting\BroadcastManager;
 use Illuminate\Config\Repository;
 use Illuminate\Contracts\Foundation\Application;
 use LogicException;
@@ -361,7 +360,7 @@ class AuthOverrideTest extends UnitTestCase
             ],
         ]);
 
-        $this->app->forgetInstance(BroadcastManager::class);
+        $this->app->forgetInstance('auth');
 
         /** @var \Illuminate\Foundation\Application&MockInterface $app */
         $app = Mockery::mock($this->app, static function (MockInterface $mock) {
@@ -510,7 +509,7 @@ class AuthOverrideTest extends UnitTestCase
 
         $app->make('config')->set('multitenancy.defaults.config', 'filesystem');
 
-        $app->make('config')->set('authing.connections.bud-provider', [
+        $app->make('config')->set('auth.providers.bud-provider', [
             'driver' => 'bud',
         ]);
 

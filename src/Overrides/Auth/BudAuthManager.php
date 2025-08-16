@@ -93,7 +93,12 @@ class BudAuthManager extends AuthManager
             $creator = $this->customProviderCreators[$driver];
             /** @var \Closure(\Illuminate\Contracts\Foundation\Application, array<string, mixed>):UserProvider|null $creator */
 
-            /** @phpstan-ignore callable.nonCallable */
+            /**
+             * This has to be here because no matter how I provide it, it
+             * misread the type of creator as being nullable, which it is not.
+             *
+             * @phpstan-ignore callable.nonCallable
+             */
             return $creator($this->app, $config);
         }
 

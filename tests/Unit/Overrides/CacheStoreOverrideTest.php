@@ -271,7 +271,7 @@ class CacheStoreOverrideTest extends UnitTestCase
 
         $this->assertEmpty($override->getOverrides());
 
-        /** @var \Illuminate\Mail\MailManager $manager */
+        /** @var \Illuminate\Cache\CacheManager $manager */
         $manager = $app->make('cache');
 
         $manager->store('bud-cache');
