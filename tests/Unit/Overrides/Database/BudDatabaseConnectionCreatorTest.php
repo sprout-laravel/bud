@@ -81,8 +81,6 @@ class BudDatabaseConnectionCreatorTest extends UnitTestCase
             } else {
                 $tenant = Mockery::mock(Tenant::class);
             }
-
-
         } else {
             $tenant = null;
         }
