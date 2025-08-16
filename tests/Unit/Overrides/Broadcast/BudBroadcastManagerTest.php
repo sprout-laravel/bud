@@ -112,7 +112,7 @@ class BudBroadcastManagerTest extends UnitTestCase
     }
 
     #[Test]
-    public function canCreateDisksNormally(): void
+    public function canCreateConnectionsNormally(): void
     {
         $app = Mockery::mock($this->app, static function (Mockery\MockInterface $mock) {
             $mock->makePartial();
