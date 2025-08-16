@@ -34,6 +34,7 @@ final class BudMailerTransportCreator extends BaseCreator
      * @param \Illuminate\Mail\MailManager                      $manager
      * @param \Sprout\Bud\Bud                                   $bud
      * @param \Sprout\Sprout                                    $sprout
+     * @param string                                            $name
      * @param array<string, mixed>&array{budStore?:string|null} $config
      */
     public function __construct(
