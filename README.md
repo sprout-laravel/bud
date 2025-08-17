@@ -27,14 +27,12 @@ Bud will load the corresponding service config for the current tenant, and use t
 
 Bud supports the following.
 
-- [ ] Auth Providers
-- [ ] Broadcasting Connections
-- [ ] Cache Stores
-- [ ] Database Connections
-- [ ] Filesystem Disks
-- [ ] Logging Channels
-- [ ] Mailers
-- [ ] Queue Connections
+- [x] Auth Providers
+- [x] Broadcasting Connections
+- [x] Cache Stores
+- [x] Database Connections
+- [x] Filesystem Disks
+- [x] Mailers
 
 > [!NOTE]
 > If you require configurations that does not require additional values,
